@@ -100,6 +100,109 @@
 //     }
 // });
 
+// $(document).ready(function() {
+//     // Function to update the progress bar
+//     function updateProgress() {
+//         const totalFields = $('form#myForm input').length;
+//         const filledFields = $('form#myForm input').filter(function() {
+//             return $.trim(this.value).length > 0;
+//         }).length;
+//         const progress = (filledFields / totalFields) * 100;
+//         $('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress).text(Math.round(progress) + '%');
+//     }
+
+//     // Initialize the progress bar
+//     updateProgress();
+
+//     // Listen for changes on input fields to update the progress bar
+//     $('form#myForm input').on('input', function() {
+//         updateProgress();
+//     });
+
+//     // Form submission
+//     $('#myForm').on('submit', function(event) {
+//         event.preventDefault();
+//         // Your validation logic here
+//         // Serialize form data
+//         // Initialize an empty payload object
+//         const payload = {};
+
+//         // Loop through each input field and populate the payload object
+//         $('form#myForm input').each(function() {
+//             const fieldId = $(this).attr('id');
+//             const fieldValue = $(this).val();
+//             if (fieldId && fieldValue.trim() !== '') {
+//                 payload[fieldId] = fieldValue;
+//             }
+//         });
+
+//         // Log the payload object to the console
+//         console.log('Payload:', payload);
+//     alert("Form Submitted Successfully!!!");
+//     });
+// });
+// working version
+// $(document).ready(function() {
+//     // Function to update the progress bar
+//     function updateProgress() {
+//         const totalFields = $('form#myForm input').length;
+//         const filledFields = $('form#myForm input').filter(function() {
+//             return $.trim(this.value).length > 0;
+//         }).length;
+//         const progress = (filledFields / totalFields) * 100;
+//         $('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress).text(Math.round(progress) + '%');
+//     }
+
+//     // Initialize the progress bar
+//     updateProgress();
+
+//     // Listen for changes on input fields to update the progress bar
+//     $('form#myForm input').on('input', function() {
+//         updateProgress();
+//     });
+
+//     // Form submission
+//     $('#myForm').on('submit', function(event) {
+//         event.preventDefault();
+        
+//         // Initialize an empty payload object
+//         const payload = {
+//             formData: {},
+//             key: 'database/drs_sea_shipment.csv',  // Replace with your file/database name
+//             bucket: 'dsrapp'  // Replace with your bucket name
+//         };
+
+//         // Loop through each input field and populate the formData object
+//         $('form#myForm input').each(function() {
+//             const fieldId = $(this).attr('id');
+//             const fieldValue = $(this).val();
+//             payload.formData[fieldId] = fieldValue.trim() !== '' ? fieldValue : null;
+//         });
+
+//         // Log the payload object to the console
+//         console.log('Payload:', payload);
+
+//         // Define the API Gateway URL
+//         var apiURL = 'https://w0gfsk9d0g.execute-api.ap-south-1.amazonaws.com/prod/surveydata_to_s3';
+
+//         // Make the AJAX call
+//         $.ajax({
+//             url: apiURL,
+//             type: 'POST',
+//             data: JSON.stringify(payload),
+//             contentType: 'application/json; charset=utf-8',
+//             success: function(response) {
+//                 console.log('Success:', response);
+//                 alert("Form Submitted Successfully!!!");
+//             },
+//             error: function(error) {
+//                 console.log('Error:', error);
+//                 alert("An error occurred while submitting the form.");
+//             }
+//         });
+//     });
+// });
+
 $(document).ready(function() {
     // Function to update the progress bar
     function updateProgress() {
@@ -122,25 +225,56 @@ $(document).ready(function() {
     // Form submission
     $('#myForm').on('submit', function(event) {
         event.preventDefault();
-        // Your validation logic here
-        // Serialize form data
-        // Initialize an empty payload object
-        const payload = {};
 
-        // Loop through each input field and populate the payload object
+        // Show spinner
+        const spinner = '<div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div>';
+        $('button[type="submit"]').html(spinner).attr('disabled', true);
+
+        // Initialize an empty payload object
+        const payload = {
+            formData: {},
+            key: 'database/drs_sea_shipment.csv',  // Replace with your file/database name
+            bucket: 'dsrapp'  // Replace with your bucket name
+        };
+
+        // Loop through each input field and populate the formData object
         $('form#myForm input').each(function() {
             const fieldId = $(this).attr('id');
             const fieldValue = $(this).val();
-            if (fieldId && fieldValue.trim() !== '') {
-                payload[fieldId] = fieldValue;
-            }
+            payload.formData[fieldId] = fieldValue.trim() !== '' ? fieldValue : null;
         });
 
-        // Log the payload object to the console
-        console.log('Payload:', payload);
-    alert("Form Submitted Successfully!!!");
+        // Define the API Gateway URL
+        var apiURL = 'https://w0gfsk9d0g.execute-api.ap-south-1.amazonaws.com/prod/surveydata_to_s3';
+
+        // Make the AJAX call
+        $.ajax({
+            url: apiURL,
+            type: 'POST',
+            data: JSON.stringify(payload),
+            contentType: 'application/json; charset=utf-8',
+            success: function(response) {
+                // Hide spinner
+                $('button[type="submit"]').html('Submit').attr('disabled', false);
+
+                // Show Swal alert
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Form Submitted Successfully!',
+                    text: 'Your data has been saved.'
+                });
+            },
+            error: function(error) {
+                // Hide spinner
+                $('button[type="submit"]').html('Submit').attr('disabled', false);
+
+                // Show Swal alert
+                Swal.fire({
+                    icon: 'error',
+                    title: 'An Error Occurred!',
+                    text: 'Please try again.'
+                });
+            }
+        });
     });
 });
-
-
-  
